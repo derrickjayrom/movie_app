@@ -26,8 +26,8 @@ class _HomePageState extends State<HomePage> {
             return GridView.builder(
               padding: const EdgeInsets.all(10),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, 
-                childAspectRatio: 0.7, 
+                crossAxisCount: 2,
+                childAspectRatio: 0.7,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),

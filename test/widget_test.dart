@@ -13,7 +13,7 @@ import 'package:movie_app/app.dart';
 void main() {
   testWidgets('App loads smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const App());
 
     // Verify that some basic widget exists (like the title or a loader)
     expect(find.byType(MaterialApp), findsOneWidget);
