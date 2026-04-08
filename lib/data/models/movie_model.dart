@@ -6,6 +6,7 @@ part 'movie_model.g.dart';
 @freezed
 class MovieResponse with _$MovieResponse {
   const factory MovieResponse({
+    required int page,
     required List<Movie> results,
     @JsonKey(name: 'total_pages') required int totalPages,
     @JsonKey(name: 'total_results') required int totalResults,
@@ -22,6 +23,7 @@ class Movie with _$Movie {
     @JsonKey(name: 'backdrop_path') String? backdropPath,
     @JsonKey(name: 'genre_ids') required List<int> genreIds,
     required int id,
+    @JsonKey(name: 'media_type') String? mediaType,
     @JsonKey(name: 'original_language') required String originalLanguage,
     @JsonKey(name: 'original_title') required String originalTitle,
     required String overview,
@@ -35,4 +37,19 @@ class Movie with _$Movie {
   }) = _Movie;
 
   factory Movie.fromJson(Map<String, dynamic> json) => _$MovieFromJson(json);
+}
+
+@freezed
+class GenreResponse with _$GenreResponse {
+  const factory GenreResponse({required List<Genre> genres}) = _GenreResponse;
+
+  factory GenreResponse.fromJson(Map<String, dynamic> json) =>
+      _$GenreResponseFromJson(json);
+}
+
+@freezed
+class Genre with _$Genre {
+  const factory Genre({required int id, required String name}) = _Genre;
+
+  factory Genre.fromJson(Map<String, dynamic> json) => _$GenreFromJson(json);
 }

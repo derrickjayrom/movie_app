@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:movie_app/presentation/screens/homepage.dart';
+import 'package:movie_app/core/router.dart';
 import 'package:movie_app/theme/app_theme.dart';
 
 class App extends StatelessWidget {
@@ -7,13 +7,13 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Movie App',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      home: const HomePage(),
+      routerConfig: router,
     );
   }
 }

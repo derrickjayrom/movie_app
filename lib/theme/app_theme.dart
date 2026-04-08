@@ -45,6 +45,7 @@ class AppTheme {
       // onBackground: foreground,
       surface: card,
       onSurface: foreground,
+      tertiary: background, // Added for bottom nav
     ),
 
     cardColor: card,
@@ -97,6 +98,7 @@ class AppTheme {
       // onBackground: darkForeground,
       surface: darkCard,
       onSurface: darkForeground,
+      tertiary: darkBackground, // Added for bottom nav
     ),
 
     cardColor: darkCard,

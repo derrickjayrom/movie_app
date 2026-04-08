@@ -14,17 +14,20 @@ class MovieCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => MovieDetails(movie: movie)),
+          MaterialPageRoute(builder: (context) => MovieDetailsPage(movie: movie)),
         );
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Image.network(
-          '${ApiConstants.imageBaseUrl}${movie.posterPath}',
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return const Center(child: Icon(Icons.broken_image, size: 50));
-          },
+        child: Hero(
+          tag: 'movie-poster-${movie.id}',
+          child: Image.network(
+            '${ApiConstants.imageBaseUrl}${movie.posterPath}',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return const Center(child: Icon(Icons.broken_image, size: 50));
+            },
+          ),
         ),
       ),
     );
