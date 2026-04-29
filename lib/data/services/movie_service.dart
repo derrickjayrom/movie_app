@@ -107,6 +107,25 @@ class MovieService {
       return [];
     }
   }
+
+  Future<Map<String, dynamic>?> getMovieCredits(int movieId) async {
+    try {
+      final response = await _dio.get(
+        '/movie/$movieId/credits',
+        queryParameters: {'language': 'en-US'},
+      );
+
+      if (response.statusCode == 200) {
+        return response.data as Map<String, dynamic>;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching credits: $e");
+      }
+    }
+    return null;
+  }
+
   Future<List<Movie>> searchMovies(String query) async {
     try {
       final response = await _dio.get(
@@ -126,6 +145,54 @@ class MovieService {
     } catch (e) {
       if (kDebugMode) {
         print("Search error: $e");
+      }
+      return [];
+    }
+  }
+
+  Future<List<Movie>> discoverMovies({
+    String? query,
+    int? genreId,
+    String sortBy = 'popularity.desc',
+    int page = 1,
+  }) async {
+    try {
+      final params = <String, dynamic>{
+        'language': 'en-US',
+        'include_adult': false,
+        'page': page,
+      };
+
+      if (query != null && query.trim().isNotEmpty) {
+        final response = await _dio.get(
+          '/search/movie',
+          queryParameters: {...params, 'query': query},
+        );
+        if (response.statusCode == 200) {
+          final movieResponse = MovieResponse.fromJson(response.data);
+          return movieResponse.results;
+        }
+        return [];
+      }
+
+      params['sort_by'] = sortBy;
+      if (genreId != null) {
+        params['with_genres'] = genreId;
+      }
+
+      final response = await _dio.get(
+        '/discover/movie',
+        queryParameters: params,
+      );
+
+      if (response.statusCode == 200) {
+        final movieResponse = MovieResponse.fromJson(response.data);
+        return movieResponse.results;
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) {
+        print("Discover error: $e");
       }
       return [];
     }

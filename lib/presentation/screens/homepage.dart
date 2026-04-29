@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:movie_app/presentation/widgets/home/featured_movies_section.dart';
+import 'package:movie_app/presentation/widgets/home/home_header.dart';
+import 'package:movie_app/presentation/widgets/home/popular_movies_section.dart';
+import 'package:movie_app/presentation/widgets/home/trending_movies_section.dart';
+import 'package:movie_app/presentation/widgets/shared/movie_card.dart';
 import 'package:provider/provider.dart';
 import 'package:movie_app/presentation/providers/movie_provider.dart';
-import 'package:movie_app/presentation/widgets/home_header.dart';
-import 'package:movie_app/presentation/widgets/featured_movies_section.dart';
-import 'package:movie_app/presentation/widgets/trending_movies_section.dart';
-import 'package:movie_app/presentation/widgets/popular_movies_section.dart';
-import 'package:movie_app/presentation/widgets/movie_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -79,12 +79,13 @@ class _HomePageState extends State<HomePage> {
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.7,
-                      crossAxisSpacing: 15,
-                      mainAxisSpacing: 15,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.7,
+                          crossAxisSpacing: 15,
+                          mainAxisSpacing: 15,
+                        ),
                     itemCount: provider.searchResults.length,
                     itemBuilder: (context, index) {
                       final movie = provider.searchResults[index];
@@ -92,7 +93,9 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
               ] else ...[
-                FeaturedMoviesSection(movies: provider.trendingMovies.take(5).toList()),
+                FeaturedMoviesSection(
+                  movies: provider.trendingMovies.take(5).toList(),
+                ),
                 const Gap(25),
                 TrendingMoviesSection(movies: provider.trendingMovies),
                 const Gap(25),

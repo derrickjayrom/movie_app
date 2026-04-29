@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:movie_app/core/constants/api_constants.dart';
 import 'package:movie_app/data/models/movie_model.dart';
+import 'package:movie_app/presentation/providers/wishlist_provider.dart';
 import 'package:movie_app/presentation/screens/movie_details.dart';
+import 'package:provider/provider.dart';
 
 class TrendingMovieCard extends StatelessWidget {
   final Movie movie;
@@ -11,11 +13,16 @@ class TrendingMovieCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final year = movie.releaseDate?.split('-')[0] ?? 'N/A';
+    final wishlist = context.watch<WishlistProvider>();
+    final isWished = wishlist.contains(movie);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => MovieDetailsPage(movie: movie)),
+          MaterialPageRoute(
+            builder: (context) => MovieDetailsPage(movie: movie),
+          ),
         );
       },
       child: SizedBox(
@@ -34,7 +41,8 @@ class TrendingMovieCard extends StatelessWidget {
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: Colors.grey[900],
                     child: const Center(
-                        child: Icon(Icons.broken_image, color: Colors.white)),
+                      child: Icon(Icons.broken_image, color: Colors.white),
+                    ),
                   ),
                 ),
               ),
@@ -45,10 +53,30 @@ class TrendingMovieCard extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     Colors.black.withValues(alpha: .7),
-                    Colors.transparent
+                    Colors.transparent,
                   ],
                   begin: Alignment.bottomCenter,
                   end: Alignment.center,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Material(
+                color: Colors.black.withValues(alpha: .35),
+                borderRadius: BorderRadius.circular(999),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: () => context.read<WishlistProvider>().toggle(movie),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(
+                      isWished ? Icons.bookmark : Icons.bookmark_border,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -64,9 +92,10 @@ class TrendingMovieCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13),
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
                   const Gap(4),
                   Row(
@@ -75,18 +104,24 @@ class TrendingMovieCard extends StatelessWidget {
                       const Gap(4),
                       Text(
                         movie.voteAverage.toStringAsFixed(1),
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
                       ),
                       const Gap(6),
                       Text(
                         year,
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
-                      )
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
-                  )
+                  ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

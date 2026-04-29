@@ -4,9 +4,15 @@ import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:movie_app/data/models/movie_model.dart';
+import 'package:movie_app/presentation/providers/movie_credits_provider.dart';
+import 'package:movie_app/presentation/providers/movie_provider.dart';
 import 'package:movie_app/presentation/providers/trailer_provider.dart';
 import 'package:movie_app/presentation/utils/ui_extensions.dart';
 import 'package:movie_app/core/constants/api_constants.dart';
+import 'package:movie_app/presentation/widgets/movie_details/action_icon.dart';
+import 'package:movie_app/presentation/widgets/movie_details/cast_chip.dart';
+import 'package:movie_app/presentation/widgets/movie_details/genre_chip.dart';
+import 'package:movie_app/presentation/widgets/movie_details/round_icon_button.dart';
 
 class MovieDetailsPage extends StatefulWidget {
   final Movie movie;
@@ -20,10 +26,7 @@ class MovieDetailsPage extends StatefulWidget {
 void _enterFullScreen() {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]);
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 }
 
 void _exitFullScreen() {
@@ -39,6 +42,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     super.initState();
     Future.microtask(() {
       context.read<TrailerProvider>().loadTrailer(widget.movie.id);
+      context.read<MovieCreditsProvider>().loadCredits(widget.movie.id);
     });
   }
 
@@ -47,6 +51,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     _exitFullScreen();
     // Clear trailer when leaving the page
     context.read<TrailerProvider>().clear(notify: false);
+    context.read<MovieCreditsProvider>().clear(notify: false);
     super.dispose();
   }
 
@@ -175,7 +180,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
         Positioned(
           top: MediaQuery.of(context).padding.top + 10,
           right: 20,
-          child: _RoundIconButton(
+          child: RoundIconButton(
             icon: Icons.close,
             onPressed: () => Navigator.pop(context),
           ),
@@ -229,21 +234,32 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                 ],
               ),
               const Gap(16),
-              Row(
-                children: const [
-                  _GenreChip("Action"),
-                  Gap(8),
-                  _GenreChip("Crime"),
-                  Gap(8),
-                  _GenreChip("Drama"),
-                ],
-              ),
+              Row(children: _buildGenreChips(context)),
               const Gap(20),
             ],
           ),
         ),
       ],
     );
+  }
+
+  List<Widget> _buildGenreChips(BuildContext context) {
+    final movieProvider = context.watch<MovieProvider>();
+
+    final names = widget.movie.genreIds
+        .map((id) => movieProvider.getGenreName(id))
+        .where((name) => name != 'Unknown')
+        .toList();
+
+    final chips = <Widget>[];
+    for (var i = 0; i < names.length; i++) {
+      chips.add(GenreChip(names[i]));
+      if (i != names.length - 1) {
+        chips.add(const Gap(8));
+      }
+    }
+
+    return chips;
   }
 
   Widget _buildActionButtons(
@@ -289,9 +305,9 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           ),
         ),
         const Gap(16),
-        _ActionIcon(Icons.add_rounded, onPressed: () {}),
+        ActionIcon(Icons.add_rounded, onPressed: () {}),
         const Gap(12),
-        _ActionIcon(Icons.share_rounded, onPressed: () {}),
+        ActionIcon(Icons.share_rounded, onPressed: () {}),
       ],
     );
   }
@@ -323,6 +339,9 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
   }
 
   Widget _buildDirectorSection(BuildContext context) {
+    final creditsProvider = context.watch<MovieCreditsProvider>();
+    final directorName = creditsProvider.director ?? 'N/A';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -343,9 +362,9 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
               child: const Icon(Icons.person, color: Colors.white54, size: 20),
             ),
             const Gap(12),
-            const Text(
-              "Christopher Nolan",
-              style: TextStyle(
+            Text(
+              directorName,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -358,6 +377,12 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
   }
 
   Widget _buildCastSection(BuildContext context) {
+    final creditsProvider = context.watch<MovieCreditsProvider>();
+    final castNames = creditsProvider.cast
+        .map((c) => (c['name'] as String?))
+        .whereType<String>()
+        .toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -373,114 +398,18 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: const [
-              _CastChip("Leonardo DiCaprio"),
-              Gap(12),
-              _CastChip("Tom Hardy"),
-              Gap(12),
-              _CastChip("Cillian Murphy"),
-            ],
+            children: castNames.isEmpty
+                ? const []
+                : List.generate(castNames.length, (index) {
+                    final widgets = <Widget>[CastChip(castNames[index])];
+                    if (index != castNames.length - 1) {
+                      widgets.add(const Gap(12));
+                    }
+                    return widgets;
+                  }).expand((w) => w).toList(),
           ),
         ),
       ],
-    );
-  }
-}
-
-class _GenreChip extends StatelessWidget {
-  final String text;
-  const _GenreChip(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-}
-
-class _CastChip extends StatelessWidget {
-  final String name;
-  const _CastChip(this.name);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade900,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-      ),
-      child: Text(
-        name,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
-      ),
-    );
-  }
-}
-
-class _ActionIcon extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  const _ActionIcon(this.icon, {required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          height: 56,
-          width: 56,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade900.withOpacity(0.8),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-          ),
-          child: Icon(icon, color: Colors.white, size: 26),
-        ),
-      ),
-    );
-  }
-}
-
-class _RoundIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  const _RoundIconButton({required this.icon, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        height: 44,
-        width: 44,
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(.5),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
-        ),
-        child: Icon(icon, color: Colors.white, size: 22),
-      ),
     );
   }
 }

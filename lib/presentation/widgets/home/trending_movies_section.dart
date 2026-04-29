@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:movie_app/data/models/movie_model.dart';
-import 'package:movie_app/presentation/widgets/trending_movie_card.dart';
+import 'package:movie_app/presentation/widgets/home/trending_movie_card.dart';
 
 class TrendingMoviesSection extends StatelessWidget {
   final List<Movie> movies;
