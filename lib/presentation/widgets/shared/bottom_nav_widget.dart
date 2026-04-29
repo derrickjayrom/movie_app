@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:movie_app/presentation/providers/ui_notifier.dart';
+import 'package:movie_app/presentation/providers/trailer_provider.dart';
 import 'package:movie_app/presentation/utils/ui_extensions.dart';
 import 'package:provider/provider.dart';
 
@@ -19,7 +20,7 @@ class _BottomNavWidgetState extends State<BottomNavWidget> {
   Widget build(BuildContext context) {
     final uINotifier = context.watch<UiNotifier>();
     final routerIndex = widget.navigationShell.currentIndex;
-    
+
     // Sync notifier with router index
     if (uINotifier.selectedIndex != routerIndex) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -38,6 +39,10 @@ class _BottomNavWidgetState extends State<BottomNavWidget> {
             type: BottomNavigationBarType.fixed,
             onTap: (index) {
               if (index == routerIndex) return;
+
+              // Pause video when switching tabs
+              context.read<TrailerProvider>().controller?.pause();
+
               widget.navigationShell.goBranch(
                 index,
                 initialLocation: index == routerIndex,

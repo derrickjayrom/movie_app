@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:movie_app/core/constants/api_constants.dart';
 import 'package:movie_app/data/models/movie_model.dart';
-import 'package:movie_app/presentation/screens/movie_details.dart';
 import 'package:movie_app/presentation/providers/wishlist_provider.dart';
+import 'package:movie_app/presentation/screens/movie_details.dart';
 import 'package:provider/provider.dart';
 
 class MovieCard extends StatelessWidget {

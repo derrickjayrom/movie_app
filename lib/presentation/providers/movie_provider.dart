@@ -39,7 +39,7 @@ class MovieProvider extends ChangeNotifier {
       _trendingMovies = results[0] as List<Movie>;
       _popularMovies = results[1] as List<Movie>;
       _topRatedMovies = results[2] as List<Movie>;
-      
+
       final genreList = results[3] as List<Genre>;
       _genres = {for (var g in genreList) g.id: g.name};
     } catch (e) {
@@ -96,5 +96,14 @@ class MovieProvider extends ChangeNotifier {
     _searchQuery = '';
     _searchResults = [];
     notifyListeners();
+  }
+
+  Future<Movie?> getMovieById(int id) async {
+    try {
+      final movies = await _service.searchMovies(id.toString());
+      return movies.isNotEmpty ? movies.first : null;
+    } catch (e) {
+      return null;
+    }
   }
 }

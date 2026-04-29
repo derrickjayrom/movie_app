@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:movie_app/data/models/movie_model.dart';
-import 'package:movie_app/presentation/widgets/featured_movie_card.dart';
+import 'package:movie_app/presentation/widgets/home/featured_movie_card.dart';
 
 class FeaturedMoviesSection extends StatelessWidget {
   final List<Movie> movies;
@@ -16,7 +16,11 @@ class FeaturedMoviesSection extends StatelessWidget {
       children: [
         const Text(
           "Featured & Trending",
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const Gap(12),
         SizedBox(
@@ -27,7 +31,7 @@ class FeaturedMoviesSection extends StatelessWidget {
             separatorBuilder: (_, __) => const Gap(16),
             itemCount: movies.length,
           ),
-        )
+        ),
       ],
     );
   }
