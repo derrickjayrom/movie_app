@@ -6,9 +6,12 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:movie_app/data/models/movie_model.dart';
 import 'package:movie_app/presentation/providers/movie_credits_provider.dart';
 import 'package:movie_app/presentation/providers/trailer_provider.dart';
-import 'package:movie_app/presentation/widgets/movie_details/action_icon.dart';
-import 'package:movie_app/presentation/widgets/movie_details/cast_chip.dart';
-import 'package:movie_app/presentation/widgets/movie_details/movie_header.dart';
+import 'package:movie_app/presentation/widgets/movie_details/movie_details_synopsis.dart';
+import 'package:movie_app/presentation/widgets/movie_details/movie_details_action_buttons.dart';
+import 'package:movie_app/presentation/widgets/movie_details/movie_details_director.dart';
+import 'package:movie_app/presentation/widgets/movie_details/movie_details_cast.dart';
+import 'package:movie_app/presentation/widgets/movie_details/movie_details_close_button.dart';
+import 'package:movie_app/presentation/widgets/movie_details/movie_details_sliver_app_bar.dart';
 
 class MovieDetailsPage extends StatefulWidget {
   final Movie movie;
@@ -19,20 +22,19 @@ class MovieDetailsPage extends StatefulWidget {
   State<MovieDetailsPage> createState() => _MovieDetailsPageState();
 }
 
-void _enterFullScreen() {
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-}
-
-void _exitFullScreen() {
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-}
-
 class _MovieDetailsPageState extends State<MovieDetailsPage>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   bool showTrailer = false;
+
+  void _enterFullScreen() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
+
+  void _exitFullScreen() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
 
   @override
   bool get wantKeepAlive => true;
@@ -111,6 +113,46 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
     );
   }
 
+  Widget _buildScrollViewContent(
+    BuildContext context,
+    TrailerProvider trailerProvider,
+  ) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Gap(24),
+            Selector<TrailerProvider, bool>(
+              selector: (_, provider) => provider.isLoading,
+              builder: (_, isLoading, __) {
+                return MovieDetailsActionButtons(
+                  trailerProvider: trailerProvider,
+                  isLoading: isLoading,
+                  onWatchTrailer: () {
+                    setState(() {
+                      showTrailer = true;
+                    });
+                    _enterFullScreen();
+                    trailerProvider.controller?.play();
+                  },
+                );
+              },
+            ),
+            const Gap(32),
+            MovieDetailsSynopsis(synopsis: widget.movie.overview),
+            const Gap(32),
+            const MovieDetailsDirector(),
+            const Gap(32),
+            const RepaintBoundary(child: MovieDetailsCast()),
+            const Gap(40),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildScaffold(
     BuildContext context,
     TrailerProvider trailerProvider,
@@ -125,259 +167,51 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
               parent: AlwaysScrollableScrollPhysics(),
             ),
             slivers: [
-              SliverAppBar(
-                expandedHeight: 350,
-                pinned: true,
-                backgroundColor: Colors.black,
-                automaticallyImplyLeading: true,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: MovieHeader(
-                    movie: widget.movie,
-                    player: player,
-                    showTrailer: showTrailer,
-                    onCloseTrailer: () {
-                      setState(() {
-                        showTrailer = false;
-                      });
-                      _exitFullScreen();
-                      final controller = context
-                          .read<TrailerProvider>()
-                          .controller;
-                      if (controller != null) {
-                        controller.pause();
-                        controller.seekTo(Duration.zero);
-                      }
-                    },
-                    onTogglePlayPause: () {
-                      final controller = context
-                          .read<TrailerProvider>()
-                          .controller;
-                      if (controller != null) {
-                        if (controller.value.isPlaying) {
-                          controller.pause();
-                        } else {
-                          controller.play();
-                        }
-                      }
-                    },
-                  ),
-                ),
+              MovieDetailsSliverAppBar(
+                movie: widget.movie,
+                player: player,
+                showTrailer: showTrailer,
+                onCloseTrailer: () {
+                  setState(() {
+                    showTrailer = false;
+                  });
+                  _exitFullScreen();
+                  final controller = context.read<TrailerProvider>().controller;
+                  if (controller != null) {
+                    controller.pause();
+                    controller.seekTo(Duration.zero);
+                  }
+                },
+                onTogglePlayPause: () {
+                  final controller = context.read<TrailerProvider>().controller;
+                  if (controller != null) {
+                    if (controller.value.isPlaying) {
+                      controller.pause();
+                    } else {
+                      controller.play();
+                    }
+                  }
+                },
               ),
-
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Gap(24),
-                      Selector<TrailerProvider, bool>(
-                        selector: (_, provider) => provider.isLoading,
-                        builder: (_, isLoading, __) {
-                          return _buildActionButtons(
-                            context,
-                            trailerProvider,
-                            isLoading,
-                          );
-                        },
-                      ),
-                      const Gap(32),
-                      _buildSynopsis(context),
-                      const Gap(32),
-                      _buildDirectorSection(context),
-                      const Gap(32),
-                      RepaintBoundary(child: _buildCastSection(context)),
-                      const Gap(40),
-                    ],
-                  ),
-                ),
-              ),
+              _buildScrollViewContent(context, trailerProvider),
             ],
           ),
-
           if (showTrailer)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 10,
-              right: 20,
-              child: Material(
-                color: Colors.black.withValues(alpha: .5),
-                borderRadius: BorderRadius.circular(999),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(999),
-                  onTap: () {
-                    setState(() {
-                      showTrailer = false;
-                    });
-                    _exitFullScreen();
-                    final controller = context
-                        .read<TrailerProvider>()
-                        .controller;
-                    if (controller != null) {
-                      controller.pause();
-                      controller.seekTo(Duration.zero);
-                    }
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Icon(Icons.close, color: Colors.white, size: 24),
-                  ),
-                ),
-              ),
+            MovieDetailsCloseButton(
+              onClose: () {
+                setState(() {
+                  showTrailer = false;
+                });
+                _exitFullScreen();
+                final controller = context.read<TrailerProvider>().controller;
+                if (controller != null) {
+                  controller.pause();
+                  controller.seekTo(Duration.zero);
+                }
+              },
             ),
         ],
       ),
-    );
-  }
-
-  Widget _buildActionButtons(
-    BuildContext context,
-    TrailerProvider trailerProvider,
-    bool isLoading,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade700,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            onPressed: trailerProvider.trailerKey != null
-                ? () {
-                    setState(() {
-                      showTrailer = true;
-                    });
-                    _enterFullScreen();
-                    trailerProvider.controller?.play();
-                  }
-                : null,
-            icon: isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                : const Icon(Icons.play_arrow_rounded, size: 28),
-            label: Text(
-              isLoading ? "Loading..." : "Watch Trailer",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        const Gap(16),
-        ActionIcon(Icons.add_rounded, onPressed: () {}),
-        const Gap(12),
-        ActionIcon(Icons.share_rounded, onPressed: () {}),
-      ],
-    );
-  }
-
-  Widget _buildSynopsis(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Synopsis",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 0.5,
-          ),
-        ),
-        const Gap(12),
-        Text(
-          widget.movie.overview,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: .7),
-            height: 1.6,
-            fontSize: 15,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDirectorSection(BuildContext context) {
-    final creditsProvider = context.watch<MovieCreditsProvider>();
-    final directorName = creditsProvider.director ?? 'N/A';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Director",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const Gap(12),
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: Colors.grey.shade900,
-              child: const Icon(Icons.person, color: Colors.white54, size: 20),
-            ),
-            const Gap(12),
-            Text(
-              directorName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCastSection(BuildContext context) {
-    final creditsProvider = context.watch<MovieCreditsProvider>();
-    final castNames = creditsProvider.cast
-        .map((c) => (c['name'] as String?))
-        .whereType<String>()
-        .toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Cast",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const Gap(16),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: castNames.isEmpty
-                ? const []
-                : List.generate(castNames.length, (index) {
-                    final widgets = <Widget>[CastChip(castNames[index])];
-                    if (index != castNames.length - 1) {
-                      widgets.add(const Gap(12));
-                    }
-                    return widgets;
-                  }).expand((w) => w).toList(),
-          ),
-        ),
-      ],
     );
   }
 }

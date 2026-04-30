@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:movie_app/presentation/providers/discovery_provider.dart';
 import 'package:movie_app/presentation/providers/movie_provider.dart';
+import 'package:movie_app/presentation/providers/ui_notifier.dart';
 import 'package:movie_app/presentation/widgets/shared/movie_card.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 class DiscoveryPage extends StatefulWidget {
   const DiscoveryPage({super.key});
@@ -50,6 +52,18 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
 
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            context.read<UiNotifier>().selectedIndex = 0;
+            context.go('/');
+          },
+        ),
+        title: const Text('Discovery', style: TextStyle(color: Colors.white)),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),

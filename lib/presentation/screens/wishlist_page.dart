@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:movie_app/presentation/providers/wishlist_provider.dart';
+import 'package:movie_app/presentation/providers/ui_notifier.dart';
 import 'package:movie_app/presentation/widgets/shared/movie_card.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 class WishlistPage extends StatelessWidget {
   const WishlistPage({super.key});
@@ -17,6 +19,13 @@ class WishlistPage extends StatelessWidget {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            context.read<UiNotifier>().selectedIndex = 0;
+            context.go('/');
+          },
+        ),
         title: const Text('Watchlist'),
       ),
       body: items.isEmpty
