@@ -21,14 +21,16 @@ class MovieCreditsProvider extends ChangeNotifier {
     final credits = await _service.getMovieCredits(movieId);
 
     if (credits != null) {
-      final crew = (credits['crew'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final crew =
+          (credits['crew'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       final directorEntry = crew.cast<Map<String, dynamic>>().firstWhere(
-            (c) => (c['job'] as String?) == 'Director',
-            orElse: () => const <String, dynamic>{},
-          );
+        (c) => (c['job'] as String?) == 'Director',
+        orElse: () => const <String, dynamic>{},
+      );
       _director = (directorEntry['name'] as String?);
 
-      final castList = (credits['cast'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final castList =
+          (credits['cast'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       _cast = castList.cast<Map<String, dynamic>>();
     }
 

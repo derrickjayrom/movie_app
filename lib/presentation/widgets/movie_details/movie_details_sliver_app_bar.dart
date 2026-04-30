@@ -28,7 +28,7 @@ class MovieDetailsSliverAppBar extends StatelessWidget {
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
         child: CircleAvatar(
-          backgroundColor: Colors.black.withOpacity(0.5),
+          backgroundColor: Colors.black.withValues(alpha: 0.5),
           child: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
             onPressed: () => Navigator.of(context).pop(),

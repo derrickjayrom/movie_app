@@ -51,13 +51,21 @@ final router = GoRouter(
                   leading: IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () {
-                      _rootNavigatorKey.currentContext?.read<UiNotifier>().selectedIndex = 0;
+                      _rootNavigatorKey.currentContext
+                              ?.read<UiNotifier>()
+                              .selectedIndex =
+                          0;
                       _rootNavigatorKey.currentContext?.go('/');
                     },
                   ),
-                  title: const Text('Profile', style: TextStyle(color: Colors.white)),
+                  title: const Text(
+                    'Profile',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-                body: const Center(child: Text('Profile', style: TextStyle(color: Colors.white))),
+                body: const Center(
+                  child: Text('Profile', style: TextStyle(color: Colors.white)),
+                ),
               ),
             ),
           ],

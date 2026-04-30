@@ -30,7 +30,9 @@ class MovieDetailsActionButtons extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
-            onPressed: trailerProvider.trailerKey != null ? onWatchTrailer : null,
+            onPressed: trailerProvider.trailerKey != null
+                ? onWatchTrailer
+                : null,
             icon: isLoading
                 ? const SizedBox(
                     width: 20,
