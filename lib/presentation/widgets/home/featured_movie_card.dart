@@ -55,7 +55,7 @@ class FeaturedMovieCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 gradient: LinearGradient(
-                  colors: [Colors.black.withOpacity(.7), Colors.transparent],
+                  colors: [Colors.black.withValues(alpha: .7), Colors.transparent],
                   begin: Alignment.bottomCenter,
                   end: Alignment.center,
                 ),

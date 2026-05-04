@@ -69,9 +69,9 @@ class _MovieHeaderState extends State<MovieHeader> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.black.withOpacity(.8),
+                  Colors.black.withValues(alpha: .8),
                   Colors.transparent,
-                  Colors.black.withOpacity(.6),
+                  Colors.black.withValues(alpha: .6),
                   Colors.black,
                 ],
                 stops: const [0.0, 0.4, 0.7, 1.0],

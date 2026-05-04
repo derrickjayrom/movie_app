@@ -13,15 +13,20 @@ class MovieService {
         queryParameters: {'language': 'en-US'},
       );
 
-      if (response.statusCode == 200) {
-        List<dynamic> results = response.data['results'];
-        return results.map((m) => Movie.fromJson(m)).toList();
+      if (response.statusCode == 200 && response.data != null) {
+        final List<dynamic>? results = response.data['results'];
+        return results?.map((m) => Movie.fromJson(m)).toList() ?? [];
       } else {
         throw Exception('Failed to load movies');
       }
     } on DioException catch (e) {
       if (kDebugMode) {
         print("Dio Error: ${e.message}");
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) {
+        print("Unexpected Error: $e");
       }
       return [];
     }
@@ -57,6 +62,11 @@ class MovieService {
     } on DioException catch (e) {
       if (kDebugMode) {
         print("Top Rated Movies Error: ${e.message}");
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) {
+        print("Unexpected Error (Top Rated): $e");
       }
       return [];
     }

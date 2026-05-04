@@ -17,9 +17,9 @@ class ActionIcon extends StatelessWidget {
           height: 56,
           width: 56,
           decoration: BoxDecoration(
-            color: Colors.grey.shade900.withOpacity(0.8),
+            color: Colors.grey.shade900.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: Icon(icon, color: Colors.white, size: 26),
         ),
