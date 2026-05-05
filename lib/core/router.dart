@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:movie_app/presentation/screens/homepage.dart';
 import 'package:movie_app/presentation/screens/discovery_page.dart';
 import 'package:movie_app/presentation/screens/wishlist_page.dart';
+import 'package:movie_app/presentation/screens/trending_movies_screen.dart';
+import 'package:movie_app/presentation/screens/popular_movies_screen.dart';
 import 'package:movie_app/presentation/widgets/shared/bottom_nav_widget.dart';
 import 'package:movie_app/presentation/providers/ui_notifier.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +23,14 @@ final router = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(path: '/', builder: (context, state) => const HomePage()),
+            GoRoute(
+              path: '/trending-movies',
+              builder: (context, state) => const TrendingMoviesScreen(),
+            ),
+            GoRoute(
+              path: '/popular-movies',
+              builder: (context, state) => const PopularMoviesScreen(),
+            ),
           ],
         ),
         StatefulShellBranch(

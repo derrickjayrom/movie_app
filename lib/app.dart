@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:gap/gap.dart';
 import 'package:movie_app/core/router.dart';
 import 'package:movie_app/theme/app_theme.dart';
 
@@ -42,11 +43,12 @@ class App extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                  const SizedBox(height: 16),
+                  Gap(16),
                   Text(
                     'Something went wrong',
-                    style: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(color: Colors.white),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.copyWith(color: Colors.white),
                   ),
                 ],
               ),
