@@ -6,12 +6,13 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:movie_app/data/models/movie_model.dart';
 import 'package:movie_app/presentation/providers/movie_credits_provider.dart';
 import 'package:movie_app/presentation/providers/trailer_provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:movie_app/core/constants/api_constants.dart';
 import 'package:movie_app/presentation/widgets/movie_details/movie_details_synopsis.dart';
 import 'package:movie_app/presentation/widgets/movie_details/movie_details_action_buttons.dart';
 import 'package:movie_app/presentation/widgets/movie_details/movie_details_director.dart';
 import 'package:movie_app/presentation/widgets/movie_details/movie_details_cast.dart';
 import 'package:movie_app/presentation/widgets/movie_details/movie_details_close_button.dart';
-import 'package:movie_app/presentation/widgets/movie_details/movie_details_sliver_app_bar.dart';
 
 class MovieDetailsPage extends StatefulWidget {
   final Movie movie;
@@ -113,46 +114,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
     );
   }
 
-  Widget _buildScrollViewContent(
-    BuildContext context,
-    TrailerProvider trailerProvider,
-  ) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Gap(24),
-            Selector<TrailerProvider, bool>(
-              selector: (_, provider) => provider.isLoading,
-              builder: (_, isLoading, __) {
-                return MovieDetailsActionButtons(
-                  trailerProvider: trailerProvider,
-                  isLoading: isLoading,
-                  onWatchTrailer: () {
-                    setState(() {
-                      showTrailer = true;
-                    });
-                    _enterFullScreen();
-                    trailerProvider.controller?.play();
-                  },
-                );
-              },
-            ),
-            const Gap(32),
-            MovieDetailsSynopsis(synopsis: widget.movie.overview),
-            const Gap(32),
-            const MovieDetailsDirector(),
-            const Gap(32),
-            const RepaintBoundary(child: MovieDetailsCast()),
-            const Gap(40),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildScaffold(
     BuildContext context,
     TrailerProvider trailerProvider,
@@ -160,56 +121,146 @@ class _MovieDetailsPageState extends State<MovieDetailsPage>
   ) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          CustomScrollView(
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildPlayerArea(context, trailerProvider, player),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: _buildDetailsContent(context, trailerProvider),
+              ),
             ),
-            slivers: [
-              MovieDetailsSliverAppBar(
-                movie: widget.movie,
-                player: player,
-                showTrailer: showTrailer,
-                onCloseTrailer: () {
-                  setState(() {
-                    showTrailer = false;
-                  });
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlayerArea(
+    BuildContext context,
+    TrailerProvider trailerProvider,
+    Widget? player,
+  ) {
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Stack(
+        children: [
+          if (showTrailer && player != null)
+            player
+          else
+            _buildBackdropFallback(),
+          if (!showTrailer)
+            Positioned(
+              top: 8,
+              left: 8,
+              child: CircleAvatar(
+                backgroundColor: Colors.black.withValues(alpha: 0.5),
+                child: IconButton(
+                  icon:
+                      const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ),
+
+          if (showTrailer)
+            Positioned(
+              top: 8,
+              left: 8,
+              child: MovieDetailsCloseButton(
+                onClose: () {
+                  setState(() => showTrailer = false);
                   _exitFullScreen();
                   final controller = context.read<TrailerProvider>().controller;
-                  if (controller != null) {
-                    controller.pause();
-                    controller.seekTo(Duration.zero);
-                  }
-                },
-                onTogglePlayPause: () {
-                  final controller = context.read<TrailerProvider>().controller;
-                  if (controller != null) {
-                    if (controller.value.isPlaying) {
-                      controller.pause();
-                    } else {
-                      controller.play();
-                    }
-                  }
+                  controller?.pause();
+                  controller?.seekTo(Duration.zero);
                 },
               ),
-              _buildScrollViewContent(context, trailerProvider),
-            ],
-          ),
-          if (showTrailer)
-            MovieDetailsCloseButton(
-              onClose: () {
-                setState(() {
-                  showTrailer = false;
-                });
-                _exitFullScreen();
-                final controller = context.read<TrailerProvider>().controller;
-                if (controller != null) {
-                  controller.pause();
-                  controller.seekTo(Duration.zero);
-                }
-              },
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackdropFallback() {
+    final backdropUrl = widget.movie.backdropPath != null
+        ? '${ApiConstants.imageBaseUrl}${widget.movie.backdropPath}'
+        : null;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (backdropUrl != null)
+          CachedNetworkImage(
+            imageUrl: backdropUrl,
+            fit: BoxFit.cover,
+            width: double.infinity,
+          )
+        else
+          Container(color: Colors.grey.shade900),
+        IgnorePointer(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withValues(alpha: .8),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: .6),
+                  Colors.black,
+                ],
+                stops: const [0.0, 0.4, 0.7, 1.0],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailsContent(
+    BuildContext context,
+    TrailerProvider trailerProvider,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Gap(24),
+          // Movie title
+          Text(
+            widget.movie.title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Gap(16),
+          Selector<TrailerProvider, bool>(
+            selector: (_, provider) => provider.isLoading,
+            builder: (_, isLoading, __) {
+              return MovieDetailsActionButtons(
+                trailerProvider: trailerProvider,
+                isLoading: isLoading,
+                onWatchTrailer: () {
+                  setState(() => showTrailer = true);
+                  _enterFullScreen();
+                  trailerProvider.controller?.play();
+                },
+              );
+            },
+          ),
+          const Gap(32),
+          MovieDetailsSynopsis(synopsis: widget.movie.overview),
+          const Gap(32),
+          const MovieDetailsDirector(),
+          const Gap(32),
+          const RepaintBoundary(child: MovieDetailsCast()),
+          const Gap(40),
         ],
       ),
     );
